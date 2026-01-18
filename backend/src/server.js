@@ -20,7 +20,12 @@ const app = express();
  Render assigns the PORT dynamically.
  You must use process.env.PORT.
  */
-const PORT = process.env.RENDER_PORT || 5000;
+const PORT = process.env.PORT || process.env.RENDER_PORT;
+// This tells the code: 
+// 1. Check if Render gave us a Port (process.env.PORT)
+// 2. If not, check if we have a custom RENDER_PORT
+// This is very confusing to be honest, we havent uploaded .env to render so render doesnt have access to it
+// For render process.env.port is it's default port of 10000 so even though we use process.env.port, it will be = 10000 and not 3000
 
 // Middleware
 app.use(express.json());
