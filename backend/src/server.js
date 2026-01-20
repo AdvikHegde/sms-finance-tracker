@@ -51,7 +51,7 @@ app.post("/sms", async (req, res) => {
   try {
     console.log("📨 Received SMS from Android:", req.body);
 
-    const { sender, message, timestamp } = req.body;
+    const { sender, message, timestamp } = req.query;
 
     // Validate required fields
     if (!sender || !message) {
