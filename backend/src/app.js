@@ -29,13 +29,16 @@ app.use((req, res, next) => {
         try {
             // Try to parse normally first
             req.body = JSON.parse(req.body);
+            next();
         } catch (e) {
             try {
                 // If it fails (because of newlines), fix the newlines and try again
                 const fixedJson = req.body.replace(/\n/g, "\\n").replace(/\r/g, "\\r");
                 req.body = JSON.parse(fixedJson);
+                next();
             } catch (finalError) {
-                return res.status(400).json({ error: "Invalid JSON format" });
+                rconsole.error("JSON Parse failed even after cleaning");
+                next();
             }
         }
     }
