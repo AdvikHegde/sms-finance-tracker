@@ -3,9 +3,13 @@
 // Collections: rawsms, transactions
 // Flow: Phone → Node API → MongoDB Atlas → Node API → React Dashboard
 
+import crypto from "crypto";
 import dotenv from "dotenv";
 import express from "express";
 
+import { RawSMS, Transaction } from "./models/schemas.js";
+import { parseSMS } from "./parsers/index.js";
+import { categorizeTransaction } from "./utils/categorizeTransaction.js";
 
 dotenv.config();
 
@@ -13,7 +17,7 @@ const app = express();
 
 const PORT = process.env.PORT || process.env.RENDER_PORT;
 
-// 🔴 NEW: Add text/plain parser BEFORE express.json()
+// Add text/plain parser BEFORE express.json()
 app.use(express.text({ type: 'text/plain', limit: '10mb' }));
 
 // Keep JSON parser for backward compatibility (in case you want to switch back)
@@ -206,48 +210,3 @@ app.listen(PORT, () => {
   console.log("📱 Waiting for SMS from Android app...");
   console.log("=".repeat(60) + "\n");
 });
-
-
-// ## Key Changes Made:
-
-// 1. **Added `express.text()` parser** to handle `text/plain` content
-// 2. **Detects content type** and extracts data accordingly
-// 3. **Extensive logging** to show:
-//    - The complete message with newlines
-//    - Number of lines received
-//    - Each line separately
-// 4. **Commented out DB logic** temporarily so we can test first
-// 5. **Returns success immediately** with diagnostic info
-
-// ## What to Do Next:
-
-// 1. **Deploy this code to Render**
-// 2. **Send a test SMS** from your phone
-// 3. **Check Render logs** - you should see something like:
-// ```
-// ============================================================
-// 📨 NEW SMS RECEIVED
-// ============================================================
-// Content-Type: text/plain
-// 📱 Sender (from header): CP-HDFCBK-T
-// ⏰ Timestamp (from header): 2026-02-15 14:30:45
-// 📝 Message (raw text with newlines):
-// ---START OF MESSAGE---
-// _id
-// 69917e772aa52f50dbb848cd
-// sender
-// "CP-HDFCBK-T"
-// text
-// Your account debited
-// ---END OF MESSAGE---
-// 📏 Message length: 89
-// 🔢 Number of lines: 5
-
-// 📋 Line-by-line breakdown:
-//   Line 1: "_id"
-//   Line 2: "69917e772aa52f50dbb848cd"
-//   Line 3: "sender"
-//   Line 4: ""CP-HDFCBK-T""
-//   Line 5: "text"
-//   Line 6: "Your account debited"
-// ✅ Message received successfully!
