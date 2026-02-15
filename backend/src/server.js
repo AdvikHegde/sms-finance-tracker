@@ -30,6 +30,15 @@ const PORT = process.env.PORT || process.env.RENDER_PORT;
 // Middleware
 app.use(express.json());
 
+// Add this after your body-parser/json middleware
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.error("❌ Malformed JSON received. Skipping request.");
+    return res.status(400).send({ success: false, message: "Invalid JSON format" });
+  }
+  next();
+});
+
 // Store received SMS messages (In-memory history)
 let smsHistory = [];
 
@@ -51,7 +60,9 @@ app.post("/sms", async (req, res) => {
   try {
     console.log("📨 Received SMS from Android:", req.body);
 
-    const { sender, message, timestamp } = req.query;
+    const { sender, message, timestamp } = req.body;
+
+    console.log("📨 Data received:", { sender, message });
 
     // Validate required fields
     if (!sender || !message) {
